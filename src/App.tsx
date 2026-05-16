@@ -7,8 +7,9 @@ import { ReplayScreen } from './components/ReplayScreen';
 import { exercises, ExerciseConfig } from './config/exercises';
 import { BodyType } from './services/bodyTypeEngine';
 import { useTheme } from './context/ThemeContext';
+import HistoryPage from "./HistoryPage";
 
-type Screen = 'welcome' | 'calibration' | 'workout' | 'summary' | 'replay';
+type Screen = 'welcome' | 'calibration' | 'workout' | 'summary' | 'replay' | 'history';
 
 interface WorkoutStats {
   reps: number;
@@ -81,7 +82,10 @@ function App() {
 
       
       {currentScreen === 'welcome' && (
-        <WelcomeScreen onStart={() => navigateTo('calibration')} />
+      <WelcomeScreen
+        onStart={() => navigateTo('calibration')}
+        onViewHistory={() => navigateTo('history')}  // add this
+       />
       )}
       
       {currentScreen === 'calibration' && (
@@ -113,6 +117,9 @@ function App() {
       
       {currentScreen === 'replay' && (
       <ReplayScreen onBack={() => navigateTo('summary')} stats={stats} />
+      )}
+      {currentScreen === 'history' && (
+      <HistoryPage onBack={() => navigateTo('welcome')} />
       )}
     </main>
   );

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Play, Sparkles } from 'lucide-react';
+import { Play, Sparkles, History } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onStart: () => void;
+  onViewHistory: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, onViewHistory }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -99,9 +100,32 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           Real-time Pose Tracking & Performance Analysis
         </p>
 
-        <button onClick={onStart} className="btn-neon">
-          INITIALIZE SYSTEM <Play size={18} fill="currentColor" />
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <button onClick={onStart} className="btn-neon">
+            INITIALIZE SYSTEM <Play size={18} fill="currentColor" />
+          </button>
+
+          <button onClick={onViewHistory} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            background: 'transparent',
+            border: '1px solid rgba(0, 240, 255, 0.25)',
+            borderRadius: '8px',
+            color: 'var(--neon-cyan)',
+            cursor: 'pointer',
+            padding: '10px 24px',
+            fontSize: '0.75rem',
+            letterSpacing: '2px',
+            fontWeight: 600,
+            opacity: 0.75,
+            transition: 'opacity 0.2s ease, border-color 0.2s ease',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.75')}
+          >
+            <History size={15} />
+            VIEW HISTORY
+          </button>
+        </div>
       </div>
 
       <div style={{ position: 'absolute', bottom: '40px', left: '0', right: '0', color: 'var(--text-dim)', fontSize: '0.7rem', letterSpacing: '4px', textTransform: 'uppercase' }}>
