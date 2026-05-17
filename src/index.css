@@ -113,7 +113,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 16px 40px;
+  padding: 14px 36px;
   font-family: var(--font-heading);
   font-size: 0.9rem;
   font-weight: 700;
@@ -122,11 +122,12 @@ body {
   color: var(--bg-primary);
   background: var(--neon-cyan);
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: 18px;
   cursor: pointer;
   position: relative;
-  transition: all 0.4s var(--ease-out);
+  transition: all 0.3s ease;
   text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 240, 255, 0.3);
 }
 
 .btn-neon:disabled {
@@ -139,7 +140,7 @@ body {
 
 .btn-neon:not(:disabled):hover {
   transform: translateY(-3px);
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+  box-shadow: 0 6px 24px rgba(0, 240, 255, 0.5);
 }
 
 .btn-outline {
@@ -147,23 +148,23 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 34px;
+  padding: 12px 32px;
   font-family: var(--font-heading);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--neon-cyan);
-  background: transparent;
+  background: rgba(0, 240, 255, 0.05);
   border: 1.5px solid rgba(0, 240, 255, 0.4);
-  border-radius: var(--radius-xl);
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.35s var(--ease-out);
+  transition: all 0.3s ease;
   text-decoration: none;
 }
 
 .btn-outline:hover {
-  background: rgba(0, 240, 255, 0.1);
+  background: rgba(0, 240, 255, 0.15);
   border-color: var(--neon-cyan);
 }
 
