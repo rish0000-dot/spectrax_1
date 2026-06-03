@@ -418,6 +418,8 @@ export class ExerciseEngine {
       };
     }
 
+
+
 // ───────── REP LOGIC ─────────
     let nextStage = stage;
     let nextReps = reps;
@@ -448,13 +450,13 @@ export class ExerciseEngine {
       const durationInDown = now - stageStartTime;
 
       if (
-now - lastRepTime > currentCooldown &&
-durationInDown > this.MIN_DOWN_DURATION
-) {
-  nextStage = "up";
-  stageStartTime = now;
-  repJustCounted = true;
-}
+        now - lastRepTime > currentCooldown &&
+        durationInDown > this.MIN_DOWN_DURATION
+      ) {
+        nextStage = "up";
+        stageStartTime = now;
+        repJustCounted = true;
+      }
     }
 
 // ───────── POSTURE VALIDATION ─────────
