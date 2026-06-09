@@ -184,6 +184,15 @@ export interface EngineState {
   // VBT Metrics
   vbtMetrics?: VBTMetrics;
 
+  // TUT Metrics
+  tutMetrics?: {
+    eccentricMs: number;
+    concentricMs: number;
+    isometricMs: number;
+    tempoRatio: string;
+    totalRepMs: number;
+  };
+
   // ── Pushup depth classification ──────────────────────────────
   lastPushupDepthResult?: PushupDepthResult | null;
   pushupDepthStats?: PushupDepthStats;
@@ -547,6 +556,9 @@ export class ExerciseEngine {
     if (repJustCounted) {
       this.kinematicEngine.onRepComplete();
 
+      // ── TUT Metrics for the completed rep ──────────────────────────────
+      const tut = this.kinematicEngine.getLastRepTUT();
+
       // ── Classify depth for the completed rep ─────────────────────────────
       let depthScoreModifier = 0;
       const repCompletionResult = strategy.onRepComplete(exerciseContext);
@@ -685,6 +697,7 @@ export class ExerciseEngine {
       jumpingJackSyncSamples: nextJumpingJackSyncSamples,
       jumpingJackSync: nextJumpingJackSync,
       vbtMetrics: updatedVbtMetrics,
+      tutMetrics: tut || undefined,
       holdTime: nextHoldTime,
 
       wristSupinationScore,

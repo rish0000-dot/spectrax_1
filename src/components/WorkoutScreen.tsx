@@ -17,7 +17,7 @@ import { useWorkoutSync } from '../hooks/useWorkoutSync';
 import { useDisplayConfig } from '../hooks/useDisplayConfig';
 import { useWorkoutWebSocket } from '../hooks/useWorkoutWebSocket';
 import { useOffscreenCanvas } from '../hooks/useOffscreenCanvas';
-import { FocusPanel, TimerPanel, RepsPanel, EnginePanel, SensePanel, AngleDialPanel } from './WorkoutPanels';
+import { FocusPanel, TimerPanel, RepsPanel, EnginePanel, SensePanel, AngleDialPanel, TutPanel } from './WorkoutPanels';
 import { ghostService } from '../services/ghostService';
 import type { GhostStats } from '../services/ghostService';
 import { useThrottleLevel } from '../services/performanceThrottleService';
@@ -55,7 +55,7 @@ interface WorkoutScreenProps {
   onCancel?: () => void;
 }
 
-type WorkoutPanelId = "focus" | "timer" | "reps" | "engine" | "sense" | "dial";
+type WorkoutPanelId = "focus" | "timer" | "reps" | "engine" | "sense" | "dial" | "tut";
 
 type PanelPosition = {
   x: number;
@@ -903,6 +903,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
       mistakes: finalMistakes,
       bestStreak: mutableState.current.bestStreak,
       jumpingJackSync: mutableState.current.jumpingJackSync,
+      tutMetrics: mutableState.current.tutMetrics,
       tags: clipEngine.generateSessionTags({
         accuracy: accuracy,
         avgConfidence: clipResult?.confidence || 0.8,
@@ -1238,6 +1239,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
         {renderDraggablePanel('engine', '', <EnginePanel status={engineState.status} statusColor={statusColor} />)}
         {renderDraggablePanel('sense', '', <SensePanel clipEngine={clipEngine} clipResult={clipResult} />)}
         {renderDraggablePanel('dial', '', <AngleDialPanel angle={currentAngle} label={exercise.primaryJoint} statusColor={statusColor} />)}
+        {renderDraggablePanel('tut', '', <TutPanel tutMetrics={engineState.tutMetrics} statusColor={statusColor} />)}
       </div>
 
       {/* MID-SET MISMATCH ALERT */}
