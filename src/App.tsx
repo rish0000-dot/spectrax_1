@@ -377,7 +377,7 @@ function App() {
           onViewTrophies={() => navigateTo("trophy")}
           onViewProfile={user ? () => navigateTo("profile") : undefined}
           onViewFitnessCalculator={() => navigateTo("fitness")}
-          onViewWorkoutPlans={() => { }}
+          onViewWorkoutPlans={() => {}}
           leveling={leveling}
           pendingRecovery={pendingRecovery}
           onApplyRecovery={handleApplyRecovery}
