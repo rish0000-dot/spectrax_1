@@ -17,10 +17,10 @@ import { useWorkoutSync } from '../hooks/useWorkoutSync';
 import { useDisplayConfig } from '../hooks/useDisplayConfig';
 import { useWorkoutWebSocket } from '../hooks/useWorkoutWebSocket';
 import { useOffscreenCanvas } from '../hooks/useOffscreenCanvas';
+import { injuryRiskEngine } from '../services/injuryRiskEngine';
 import { FocusPanel, TimerPanel, RepsPanel, EnginePanel, SensePanel, AngleDialPanel, RiskPanel, TutPanel } from './WorkoutPanels';
 import { ghostService } from '../services/ghostService';
 import type { GhostStats } from '../services/ghostService';
-import { injuryRiskEngine } from '../services/injuryRiskEngine';
 import { useThrottleLevel } from '../services/performanceThrottleService';
 import { DepthEstimationEngine } from '../services/depthEstimationEngine';
 import { reconstruct3DMesh } from '../services/mesh3DEngine';
@@ -39,6 +39,7 @@ const createPoseWorker = () =>
 
 interface WorkoutScreenProps {
   exercise: ExerciseConfig;
+  onCancel?: () => void;
   onEnd: (stats: {
     reps: number;
     totalReps: number;
@@ -56,7 +57,6 @@ interface WorkoutScreenProps {
   onAutoDetect?: (key: string) => void;
   bodyType?: BodyType;
   adaptiveFactor?: number;
-  onCancel?: () => void;
 }
 
 type WorkoutPanelId = "focus" | "timer" | "reps" | "engine" | "sense" | "dial" | "risk" | "tut";
@@ -1340,6 +1340,12 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
         </button>
         <button
           type="button"
+          className="workout-lock-toggle is-unlocked"
+          onClick={handleHandoff}
+        >
+          📱 Handoff
+        </button>
+        <button
           className={`workout-lock-toggle ${depth3DEnabled ? 'is-locked' : 'is-unlocked'}`}
           onClick={() => setDepth3DEnabled((prev) => !prev)}
         >
