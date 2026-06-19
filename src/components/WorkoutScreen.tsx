@@ -28,6 +28,7 @@ import { CameraErrorBoundary } from './CameraErrorBoundary';
 import { gestureService, GestureCommand } from '../services/gestureService';
 import { debounce } from '../utils/debounce';
 import { useSettings } from '../context/SettingsContext';
+import QRCode from 'qrcode';
 
 // ── Web Worker (Vite native worker bundling) ──────────────────────────────────
 const createPoseWorker = () =>
@@ -54,8 +55,6 @@ interface WorkoutScreenProps {
   onAutoDetect?: (key: string) => void;
   bodyType?: BodyType;
   adaptiveFactor?: number;
-  onSnapshotUpdate?: (liveStats: any) => void;
-  onCancel?: () => void;
 }
 
 type WorkoutPanelId = "focus" | "timer" | "reps" | "engine" | "sense" | "dial" | "risk" | "tut";
@@ -322,6 +321,8 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  const [showHandoffModal, setShowHandoffModal] = useState(false);
+  const [handoffQRData, setHandoffQRData] = useState<string | null>(null);
   const [gestureConfidences, setGestureConfidences] = useState<Record<string, number>>({});
   const [lastGestureCommand, setLastGestureCommand] = useState<GestureCommand | null>(null);
   const [gestureHudVisible, setGestureHudVisible] = useState(false);
@@ -744,6 +745,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
     }
 
     // 2. Process through multi-exercise engine (stays on main thread — manages state)
+    const prevReps = mutableState.current.reps;
     const nextState = await exerciseEngine.process(
       activeConfig,
       angles,
@@ -815,6 +817,14 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
   }, [videoRef]);
 
   const {
+    startSession,
+    recordRep,
+    updateSessionState,
+    getSessionForHandoff,
+    endSession,
+  } = useWorkoutSync();
+
+  const {
     startSystem,
     stopSystem,
   } = useCameraPose({
@@ -884,6 +894,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
         if (ctx) overlayRenderer.setContext(ctx);
 
         sessionRecorder.start();
+        startSession(exercise.key, exercise.name);
         await clipEngine.init();
         await startSystem();
       } catch (err: any) {
@@ -936,7 +947,28 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
     window.localStorage.setItem(PANEL_POSITION_STORAGE_KEY, JSON.stringify(panelPositions));
   }, [panelPositions]);
 
-  const handleEnd = () => {
+  const handleHandoff = async () => {
+    const sessionData = getSessionForHandoff();
+    if (!sessionData) return;
+    try {
+      let binary = '';
+      const len = sessionData.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(sessionData[i]);
+      }
+      const base64 = btoa(binary);
+      const qrDataUrl = await QRCode.toDataURL(base64, { width: 256, margin: 2, color: { dark: '#00f0ff', light: '#000000' } });
+      setHandoffQRData(qrDataUrl);
+      setShowHandoffModal(true);
+    } catch (err) {
+      console.error('Failed to generate handoff QR:', err);
+    }
+  };
+
+  const handleEnd = async () => {
+    // End CRDT session first
+    await endSession();
+
     const accuracy =
       mutableState.current.totalReps > 0
         ? Math.round(
@@ -1172,7 +1204,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", pointerEvents: "auto" }}>
           <button
-            onClick={() => onCancel && onCancel()}
+            onClick={() => setShowExitModal(true)}
             className="btn-neon"
             aria-label="Exit Workout"
             style={{
@@ -1306,6 +1338,10 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
         </button>
         <button
           type="button"
+          className="workout-lock-toggle is-unlocked"
+          onClick={handleHandoff}
+        >
+          📱 Handoff
           className={`workout-lock-toggle ${depth3DEnabled ? 'is-locked' : 'is-unlocked'}`}
           onClick={() => setDepth3DEnabled((prev) => !prev)}
         >
@@ -1873,6 +1909,41 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
           75% { transform: translateX(-48%); }
         }
       `}</style>
+
+      {/* Handoff QR Modal */}
+      {showHandoffModal && handoffQRData && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 999,
+            backdropFilter: 'blur(12px)',
+            gap: '20px',
+          }}
+        >
+          <h2 style={{ color: '#fff', fontFamily: 'var(--font-heading)', letterSpacing: '2px' }}>
+            SCAN TO HANDOFF
+          </h2>
+          <img src={handoffQRData} alt="Session handoff QR" style={{ borderRadius: '12px' }} />
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', maxWidth: '300px', textAlign: 'center' }}>
+            Scan this code on another device to continue your session instantly.
+          </p>
+          <button
+            className="btn-neon"
+            onClick={() => setShowHandoffModal(false)}
+          >
+            Close
+          </button>
+        </div>
+      )}
 
       {showExitModal && (
         <div
