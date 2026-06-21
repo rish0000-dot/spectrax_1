@@ -12,6 +12,22 @@ const {
 const { createApp } = require("./createApp");
 const { logger: defaultLogger } = require("../shared/utils/logger");
 
+function resolveClientIp(socket, trustProxy) {
+  const direct = socket.handshake.address;
+  if (!trustProxy || trustProxy <= 0) {
+    return direct;
+  }
+  const forwarded = socket.handshake.headers["x-forwarded-for"];
+  if (!forwarded) {
+    return direct;
+  }
+  const chain = String(forwarded)
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return chain[chain.length - trustProxy] || direct;
+}
+
 function createServer(overrides = {}) {
   // Move ipConnectionCount to function scope for multi-instance safety
   const ipConnectionCount = new Map();
@@ -48,7 +64,7 @@ function createServer(overrides = {}) {
   });
 
   io.use((socket, next) => {
-    const ip = socket.handshake.address;
+    const ip = resolveClientIp(socket, config.trustProxy);
     const count = (ipConnectionCount.get(ip) || 0) + 1;
     if (count > config.maxConnectionsPerIp) {
       return next(new Error(`Connection limit exceeded for ${ip}`));
@@ -62,7 +78,7 @@ function createServer(overrides = {}) {
     sessionStore.initializeSession(socket.id);
 
     socket.on("disconnect", () => {
-      const ip = socket.handshake.address;
+      const ip = resolveClientIp(socket, config.trustProxy);
       const count = ipConnectionCount.get(ip) || 1;
       if (count <= 1) {
         ipConnectionCount.delete(ip);
@@ -133,4 +149,5 @@ function createServer(overrides = {}) {
 
 module.exports = {
   createServer,
+  resolveClientIp,
 };

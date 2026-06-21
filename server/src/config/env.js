@@ -15,6 +15,8 @@ function getConfig(overrides = {}) {
     overrides.socketPath ?? process.env.SOCKET_PATH ?? "/socket.io";
   const maxConnectionsPerIp =
     overrides.maxConnectionsPerIp ?? Number(process.env.MAX_CONNECTIONS_PER_IP || 10);
+  const trustProxy =
+    overrides.trustProxy ?? (Number(process.env.TRUST_PROXY) || 0);
 
   return {
     port,
@@ -23,6 +25,7 @@ function getConfig(overrides = {}) {
     maxSessionFrames,
     socketPath,
     maxConnectionsPerIp,
+    trustProxy,
   };
 }
 
