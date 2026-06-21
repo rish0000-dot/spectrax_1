@@ -16,7 +16,7 @@ import {
   SyncStatus,
   WorkoutRecord,
 } from "../services/workoutSyncService";
-import { CRDTSessionEngine, loadSessionFromDB, listActiveSessions, clearOldSessions } from "../services/crdtSessionEngine";
+import { CRDTSessionEngine, loadSessionFromDB, listActiveSessions, clearOldSessions, clearSession } from "../services/crdtSessionEngine";
 import type { RepOperation, SessionSnapshot } from "../services/crdtSessionEngine";
 
 export interface CRDTWorkoutRecord extends WorkoutRecord {
@@ -169,7 +169,6 @@ export function useWorkoutSync() {
     setActiveSession(null);
 
     // Clear CRDT session after successful save
-    const { clearSession } = await import("../services/crdtSessionEngine");
     await clearSession(snapshot.sessionId);
     crdtEngineRef.current = null;
 
