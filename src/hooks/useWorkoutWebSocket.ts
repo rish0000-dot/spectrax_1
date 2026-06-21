@@ -26,7 +26,7 @@ export function useWorkoutWebSocket(backendUrlRaw: string | undefined = import.m
       wsSocket.onerror = () => {
         console.warn(
           "[SpectraX WS] Could not connect to backend at",
-          wsUrl,
+          backendUrl,
           "— live backend features will be unavailable. " +
           "Check that the server is running and that VITE_BACKEND_URL is correct in .env.local."
         );
